@@ -1,0 +1,12 @@
+{
+  "name": "com.jsunitysync.collaboration",
+  "version": "0.1.0",
+  "displayName": "J'sUnitySync Collaboration",
+  "description": "Opt-in, revision-safe Unity Editor session and scene collaboration transport.",
+  "unity": "6000.0",
+  "author": {
+    "name": "J'sUnitySync"
+  },
+  "keywords": ["collaboration", "multiplayer", "scene-sync"],
+  "samples": []
+}

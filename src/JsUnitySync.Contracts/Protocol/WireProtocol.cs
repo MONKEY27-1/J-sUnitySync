@@ -11,16 +11,14 @@ namespace JsUnitySync.Contracts.Protocol
         Welcome = 1,
         /// <summary>A scene synchronization event delivered to a client.</summary>
         SceneEvent = 2,
+        /// <summary>Explicit stale-property conflict; rejected write and accepted value/revision are included.</summary>
+        Conflict = 10,
         /// <summary>Client acknowledgment of one or more events by sequence.</summary>
         EventAck = 3,
         /// <summary>Keep-alive.</summary>
         Heartbeat = 4,
-        /// <summary>Chat message.</summary>
-        ChatMessage = 5,
         /// <summary>Presence update (join/leave/away).</summary>
         Presence = 6,
-        /// <summary>WebRTC signaling offer/answer/ICE.</summary>
-        RtcSignal = 7,
         /// <summary>Recovery: client requests replay from a given sequence.</summary>
         ResumeRequest = 8,
         /// <summary>Server rejects an operation (auth, conflict, protocol error).</summary>
@@ -39,6 +37,8 @@ namespace JsUnitySync.Contracts.Protocol
         public string FrameId { get; set; } = string.Empty;
         /// <summary>Session the frame belongs to; empty for session-less frames.</summary>
         public string SessionId { get; set; } = string.Empty;
+        /// <summary>Authenticated server-assigned author for accepted collaboration events.</summary>
+        public string AuthorId { get; set; } = string.Empty;
         /// <summary>UTC ISO-8601 timestamp.</summary>
         public DateTimeOffset UtcTimestamp { get; set; }
         /// <summary>Server-assigned sequence for reliable delivery (SceneEvent frames only; -1 otherwise).</summary>
@@ -51,7 +51,12 @@ namespace JsUnitySync.Contracts.Protocol
     public sealed class HelloPayload
     {
         public string UserId { get; set; } = string.Empty;
-        public string AuthToken { get; set; } = string.Empty;
+        /// <summary>Stable id for this desktop/editor installation (used for durable ack cursors).</summary>
+        public string ClientId { get; set; } = string.Empty;
+        /// <summary>Unity scene asset GUID (32 hex chars); empty for non-Editor observers.</summary>
+        public string SceneGuid { get; set; } = string.Empty;
+        /// <summary>SHA-256 of the sorted stable object-id baseline; empty for non-Editor observers.</summary>
+        public string SceneManifestHash { get; set; } = string.Empty;
         public string ProtocolVersion { get; set; } = ProtocolInfo.Version;
         /// <summary>Sequence the client has already acknowledged; -1 for a fresh join.</summary>
         public long LastAckedSequence { get; set; } = -1;
@@ -76,11 +81,13 @@ namespace JsUnitySync.Contracts.Protocol
     {
         public string Code { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
+        /// <summary>Optional typed JSON details for conflict/resume errors.</summary>
+        public string DetailsJson { get; set; } = string.Empty;
     }
 
     public static class ProtocolInfo
     {
         /// <summary>Wire protocol version. Bumped on breaking changes.</summary>
-        public const string Version = "1.0";
+        public const string Version = "2.0";
     }
 }

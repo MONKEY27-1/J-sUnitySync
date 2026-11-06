@@ -1,8 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\JsUnitySync.Contracts\JsUnitySync.Contracts.csproj" />
     <ProjectReference Include="..\JsUnitySync.Domain\JsUnitySync.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Unity Editor sources are compiled by Unity's asmdef compiler, not by this Unity-independent .NET library. -->
+    <Compile Remove="UnityPackage\**\*.cs" />
   </ItemGroup>
 
   <PropertyGroup>

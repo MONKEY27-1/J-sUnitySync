@@ -1,0 +1,15 @@
+{
+  "name": "JsUnitySync.Unity.Editor.Tests",
+  "rootNamespace": "JsUnitySync.UnityPackage.Tests",
+  "references": ["JsUnitySync.Unity.Runtime", "JsUnitySync.Unity.Editor"],
+  "includePlatforms": ["Editor"],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": ["UNITY_INCLUDE_TESTS"],
+  "versionDefines": [],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "noEngineReferences": false
+}

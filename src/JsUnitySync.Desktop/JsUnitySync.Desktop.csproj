@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\JsUnitySync.Desktop.Core\JsUnitySync.Desktop.Core.csproj" />
+    <ProjectReference Include="..\JsUnitySync.Api\JsUnitySync.Api.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.14" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>JsUnitySync</AssemblyName>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <Target Name="RemoveUnneededApiSidecars" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+        Condition="'%(ResolvedFileToPublish.RelativePath)' == 'JsUnitySync.Api.runtimeconfig.json' Or '%(ResolvedFileToPublish.RelativePath)' == 'appsettings.json' Or '%(ResolvedFileToPublish.RelativePath)' == 'appsettings.Development.json'" />
+    </ItemGroup>
+  </Target>
+
+</Project>

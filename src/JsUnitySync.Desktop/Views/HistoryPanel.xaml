@@ -1,0 +1,23 @@
+<UserControl x:Class="JsUnitySync.Desktop.Views.HistoryPanel"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <UserControl.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries><ResourceDictionary Source="../Themes/Dark.xaml"/></ResourceDictionary.MergedDictionaries></ResourceDictionary></UserControl.Resources>
+ <StackPanel>
+  <Border Style="{StaticResource Panel}" Margin="0,0,0,18">
+   <StackPanel>
+    <DockPanel><StackPanel><TextBlock Text="Project file history" FontSize="21" FontWeight="SemiBold"/><TextBlock Text="Select a project in Projects, then inspect its accepted shared script and asset revisions." Style="{StaticResource MutedText}" Margin="0,6,0,0"/></StackPanel><Button Content="Refresh history" Command="{Binding RefreshHistoryCommand}" DockPanel.Dock="Right" VerticalAlignment="Top"/></DockPanel>
+    <TextBlock Text="{Binding SelectedProject.Name, TargetNullValue=Select a project in Projects}" Foreground="{StaticResource BlueBrush}" Margin="0,18,0,8"/>
+   </StackPanel>
+  </Border>
+  <Border Style="{StaticResource Panel}" Margin="0,0,0,18">
+   <StackPanel>
+    <ListBox ItemsSource="{Binding FileHistory}" SelectedItem="{Binding SelectedFileVersion}" MaxHeight="420" AutomationProperties.Name="Project file revisions">
+     <ListBox.ItemTemplate><DataTemplate><Grid Margin="4"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="{Binding Kind}" Foreground="{StaticResource PurpleBrush}" Margin="0,0,12,0"/><TextBlock Grid.Column="1" Text="{Binding Path}" TextTrimming="CharacterEllipsis"/><TextBlock Grid.Column="2" Text="{Binding Revision, StringFormat=revision {0}}" Foreground="{StaticResource MutedBrush}" Margin="12,0,0,0"/></Grid></DataTemplate></ListBox.ItemTemplate>
+    </ListBox>
+    <TextBlock Text="{Binding SelectedFileVersion.ContentHash, TargetNullValue=Choose a version. Script source stays on the server; asset bytes are content-addressed.}" Style="{StaticResource MutedText}" FontSize="12" TextWrapping="Wrap" Margin="4,8,4,12"/>
+    <Button Content="Restore selected shared revision" Command="{Binding RestoreFileVersionCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left"/>
+    <TextBlock Text="Restore uses the current revision as a concurrency guard and creates a new revision. It changes the server-side shared document or asset pointer only; it never overwrites local Unity files. History is currently bounded to 100 versions per file." Style="{StaticResource MutedText}" FontSize="12" TextWrapping="Wrap" Margin="0,14,0,0"/>
+    <TextBlock Text="{Binding Message}" Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="0,10,0,0" AutomationProperties.LiveSetting="Polite"/>
+   </StackPanel>
+  </Border>
+ </StackPanel>
+</UserControl>

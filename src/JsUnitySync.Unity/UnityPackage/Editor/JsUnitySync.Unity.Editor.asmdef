@@ -1,0 +1,14 @@
+{
+  "name": "JsUnitySync.Unity.Editor",
+  "rootNamespace": "JsUnitySync.UnityPackage.Editor",
+  "references": ["JsUnitySync.Unity.Runtime"],
+  "includePlatforms": ["Editor"],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

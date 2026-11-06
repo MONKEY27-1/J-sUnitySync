@@ -1,0 +1,103 @@
+using Microsoft.EntityFrameworkCore;
+
+namespace JsUnitySync.Server.Persistence;
+
+public sealed class CollaborationDbContext(DbContextOptions<CollaborationDbContext> options) : DbContext(options)
+{
+    public DbSet<UserAccount> Users => Set<UserAccount>();
+    public DbSet<UserSession> Sessions => Set<UserSession>();
+    public DbSet<TeamRecord> Teams => Set<TeamRecord>();
+    public DbSet<TeamMembership> Memberships => Set<TeamMembership>();
+    public DbSet<TeamInvitation> TeamInvitations => Set<TeamInvitation>();
+    public DbSet<FriendshipRecord> Friendships => Set<FriendshipRecord>();
+    public DbSet<ProjectRecord> Projects => Set<ProjectRecord>();
+    public DbSet<CollaborationSessionRecord> CollaborationSessions => Set<CollaborationSessionRecord>();
+    public DbSet<SessionEventRecord> SessionEvents => Set<SessionEventRecord>();
+    public DbSet<SessionPropertyRecord> SessionProperties => Set<SessionPropertyRecord>();
+    public DbSet<SessionClientCursorRecord> SessionClientCursors => Set<SessionClientCursorRecord>();
+    public DbSet<SessionConflictRecord> SessionConflicts => Set<SessionConflictRecord>();
+    public DbSet<ScriptDocumentRecord> ScriptDocuments => Set<ScriptDocumentRecord>();
+    public DbSet<ProjectAssetRecord> ProjectAssets => Set<ProjectAssetRecord>();
+    public DbSet<ProjectFileVersionRecord> ProjectFileVersions => Set<ProjectFileVersionRecord>();
+
+    protected override void OnModelCreating(ModelBuilder model)
+    {
+        model.Entity<UserAccount>().HasIndex(x => x.NormalizedEmail).IsUnique();
+        model.Entity<UserAccount>().Property(x => x.Revision).IsConcurrencyToken();
+        model.Entity<UserAccount>().Property(x => x.Email).HasMaxLength(254);
+        model.Entity<UserAccount>().Property(x => x.NormalizedEmail).HasMaxLength(254);
+        model.Entity<UserAccount>().Property(x => x.DisplayName).HasMaxLength(64);
+        model.Entity<UserSession>().HasIndex(x => x.TokenHash).IsUnique();
+        model.Entity<UserSession>().HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        model.Entity<TeamRecord>().HasIndex(x => x.CreatedById);
+        model.Entity<TeamRecord>().Property(x => x.Name).HasMaxLength(64);
+        model.Entity<TeamRecord>().Property(x => x.Revision).IsConcurrencyToken();
+        model.Entity<TeamMembership>().HasKey(x => new { x.TeamId, x.UserId });
+        model.Entity<TeamMembership>().HasIndex(x => x.UserId);
+        model.Entity<TeamMembership>().Property(x => x.Revision).IsConcurrencyToken();
+        model.Entity<TeamMembership>().HasOne(x => x.Team).WithMany().HasForeignKey(x => x.TeamId).OnDelete(DeleteBehavior.Cascade);
+        model.Entity<TeamMembership>().HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        model.Entity<TeamInvitation>().HasIndex(x => new { x.TeamId, x.InviteeId }).IsUnique().HasFilter("\"Status\" = 0");
+        model.Entity<TeamInvitation>().Property(x => x.Revision).IsConcurrencyToken();
+        model.Entity<TeamInvitation>().HasOne(x => x.Team).WithMany().HasForeignKey(x => x.TeamId).OnDelete(DeleteBehavior.Cascade);
+        model.Entity<TeamInvitation>().HasIndex(x => x.InviteeId);
+        model.Entity<FriendshipRecord>().HasIndex(x => new { x.UserLowId, x.UserHighId }).IsUnique();
+        model.Entity<FriendshipRecord>().Property(x => x.Revision).IsConcurrencyToken();
+        model.Entity<ProjectRecord>().HasIndex(x => new { x.TeamId, x.NormalizedName }).IsUnique();
+        model.Entity<ProjectRecord>().Property(x => x.Name).HasMaxLength(96);
+        model.Entity<ProjectRecord>().Property(x => x.Revision).IsConcurrencyToken();
+        model.Entity<ProjectRecord>().Property(x => x.AssetCatalogRevision).IsConcurrencyToken();
+        model.Entity<ProjectRecord>().HasOne(x => x.Team).WithMany().HasForeignKey(x => x.TeamId).OnDelete(DeleteBehavior.Cascade);
+        model.Entity<CollaborationSessionRecord>().HasIndex(x => new { x.ProjectId, x.CreatedUnixSeconds });
+        model.Entity<CollaborationSessionRecord>().Property(x => x.Name).HasMaxLength(64);
+        model.Entity<CollaborationSessionRecord>().Property(x => x.SceneGuid).HasMaxLength(32);
+        model.Entity<CollaborationSessionRecord>().Property(x => x.SceneManifestHash).HasMaxLength(64);
+        model.Entity<CollaborationSessionRecord>().Property(x => x.LastSequence).IsConcurrencyToken();
+        model.Entity<CollaborationSessionRecord>().Property(x => x.Revision).IsConcurrencyToken();
+        model.Entity<CollaborationSessionRecord>().HasOne(x => x.Project).WithMany().HasForeignKey(x => x.ProjectId).OnDelete(DeleteBehavior.Cascade);
+        model.Entity<SessionEventRecord>().HasKey(x => new { x.SessionId, x.Sequence });
+        model.Entity<SessionEventRecord>().HasIndex(x => new { x.SessionId, x.EventId }).IsUnique();
+        model.Entity<SessionEventRecord>().Property(x => x.PayloadJson).HasMaxLength(65_536);
+        model.Entity<SessionEventRecord>().Property(x => x.ObjectId).HasMaxLength(26);
+        model.Entity<SessionEventRecord>().HasOne(x => x.Session).WithMany().HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Cascade);
+        model.Entity<SessionPropertyRecord>().HasKey(x => new { x.SessionId, x.ObjectId, x.ComponentType, x.PropertyName });
+        model.Entity<SessionPropertyRecord>().HasOne<CollaborationSessionRecord>().WithMany().HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Cascade);
+        model.Entity<SessionPropertyRecord>().Property(x => x.ObjectId).HasMaxLength(26);
+        model.Entity<SessionPropertyRecord>().Property(x => x.ComponentType).HasMaxLength(128);
+        model.Entity<SessionPropertyRecord>().Property(x => x.PropertyName).HasMaxLength(128);
+        model.Entity<SessionPropertyRecord>().Property(x => x.AcceptedById).HasMaxLength(26);
+        model.Entity<SessionClientCursorRecord>().Property(x => x.ClientId).HasMaxLength(36);
+        model.Entity<SessionClientCursorRecord>().Property(x => x.LastAckedSequence).IsConcurrencyToken();
+        model.Entity<SessionConflictRecord>().HasKey(x => x.Id);
+        model.Entity<SessionConflictRecord>().HasIndex(x => new { x.SessionId, x.RejectedEventId }).IsUnique();
+        model.Entity<SessionConflictRecord>().HasIndex(x => new { x.SessionId, x.CreatedUnixSeconds });
+        model.Entity<SessionConflictRecord>().HasOne(x => x.Session).WithMany().HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Cascade);
+        model.Entity<SessionConflictRecord>().Property(x => x.ObjectId).HasMaxLength(26);
+        model.Entity<SessionConflictRecord>().Property(x => x.AcceptedById).HasMaxLength(26);
+        model.Entity<SessionConflictRecord>().Property(x => x.RejectedById).HasMaxLength(26);
+        model.Entity<SessionConflictRecord>().Property(x => x.RejectedEventId).HasMaxLength(26);
+        model.Entity<SessionConflictRecord>().Property(x => x.ComponentType).HasMaxLength(128);
+        model.Entity<SessionConflictRecord>().Property(x => x.PropertyName).HasMaxLength(128);
+        model.Entity<SessionConflictRecord>().Property(x => x.AcceptedValue).HasMaxLength(16_384);
+        model.Entity<SessionConflictRecord>().Property(x => x.RejectedValue).HasMaxLength(16_384);
+        model.Entity<ScriptDocumentRecord>().HasKey(x => new { x.ProjectId, x.Path });
+        model.Entity<ScriptDocumentRecord>().Property(x => x.Path).HasMaxLength(512);
+        model.Entity<ScriptDocumentRecord>().Property(x => x.Content).HasMaxLength(1_048_576);
+        model.Entity<ScriptDocumentRecord>().Property(x => x.Revision).IsConcurrencyToken();
+        model.Entity<ScriptDocumentRecord>().HasOne(x => x.Project).WithMany().HasForeignKey(x => x.ProjectId).OnDelete(DeleteBehavior.Cascade);
+        model.Entity<ProjectAssetRecord>().HasKey(x => new { x.ProjectId, x.Path });
+        model.Entity<ProjectAssetRecord>().Property(x => x.Path).HasMaxLength(512);
+        model.Entity<ProjectAssetRecord>().Property(x => x.ContentHash).HasMaxLength(64);
+        model.Entity<ProjectAssetRecord>().Property(x => x.Revision).IsConcurrencyToken();
+        model.Entity<ProjectAssetRecord>().HasOne(x => x.Project).WithMany().HasForeignKey(x => x.ProjectId).OnDelete(DeleteBehavior.Cascade);
+        model.Entity<ProjectFileVersionRecord>().HasIndex(x => new { x.ProjectId, x.Kind, x.Path, x.Revision }).IsUnique();
+        model.Entity<ProjectFileVersionRecord>().HasIndex(x => new { x.ProjectId, x.SavedUnixSeconds });
+        model.Entity<ProjectFileVersionRecord>().Property(x => x.Kind).HasMaxLength(16);
+        model.Entity<ProjectFileVersionRecord>().Property(x => x.Path).HasMaxLength(512);
+        model.Entity<ProjectFileVersionRecord>().Property(x => x.Content).HasMaxLength(1_048_576);
+        model.Entity<ProjectFileVersionRecord>().Property(x => x.ContentHash).HasMaxLength(64);
+        model.Entity<ProjectFileVersionRecord>().HasOne(x => x.Project).WithMany().HasForeignKey(x => x.ProjectId).OnDelete(DeleteBehavior.Cascade);
+        model.Entity<SessionClientCursorRecord>().HasKey(x => new { x.SessionId, x.UserId, x.ClientId });
+        model.Entity<SessionClientCursorRecord>().HasOne(x => x.Session).WithMany().HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Cascade);
+    }
+}
