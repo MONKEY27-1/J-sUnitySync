@@ -1,0 +1,6 @@
+@JsUnitySync.Api_HostAddress = http://localhost:5135
+
+GET {{JsUnitySync.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

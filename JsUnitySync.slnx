@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/JsUnitySync.Api/JsUnitySync.Api.csproj" />
+    <Project Path="src/JsUnitySync.Contracts/JsUnitySync.Contracts.csproj" />
+    <Project Path="src/JsUnitySync.Domain/JsUnitySync.Domain.csproj" />
+    <Project Path="src/JsUnitySync.Unity/JsUnitySync.Unity.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/JsUnitySync.Domain.Tests/JsUnitySync.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

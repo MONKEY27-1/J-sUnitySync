@@ -1,0 +1,24 @@
+# .NET
+bin/
+obj/
+*.user
+logs/
+TestResults/
+
+# Rider / VS
+.idea/
+.vs/
+
+# Unity (never commit Editor caches or generated data)
+Library/
+Temp/
+Logs/
+Build/
+Builds/
+UserSettings/
+*.csproj.bak
+
+# Secrets
+appsettings.*.local.json
+*.pfx
+*.key
